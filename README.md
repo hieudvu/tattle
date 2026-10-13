@@ -20,108 +20,37 @@
 
 <p align="center"><img src="docs/images/panel.png" alt="Tattle's menu bar panel listing Microsoft Edge with two noisy tabs and Safari playing a muted song" width="560"></p>
 
-## What it does
+## Features
 
-- **Finds the noise.** Every app currently playing audio, live. Helper processes collapse into their
-  app, and `--headless` browsers are flagged.
-- **Down to the tab.** With the browser extension (Chrome, Edge, Brave, Arc, Vivaldi, Opera, Firefox
-  and Safari) each noisy tab is listed by title and site.
-- **Controls where it counts.** Mute or unmute an app or a single tab, pause, previous / next track,
-  close a tab, or quit the app.
-- **Now Playing.** Shows the song or video title next to the app.
-- **Light on resources.** It only scans while the panel or Settings is open.
-- **Private.** Everything stays on your Mac. Tab titles and URLs are read locally by the extension
-  and never leave it; Tattle never records or stores audio.
+- See every app that is playing sound, live. Helper processes fold into their app.
+- See the exact browser tab (title and site) with the browser extension.
+- Mute, pause, skip, close a tab or quit the app, right from the menu bar.
+- Shows what is playing next to the app.
+- Private and light: nothing leaves your Mac, and it only scans while the panel is open.
 
 ## Install
 
-Download the zip for your Mac from the [latest release](https://github.com/hieudvu/tattle/releases/latest)
-(`arm64` for Apple silicon, `x86_64` for Intel), unzip, and drag Tattle to Applications. It is signed,
-notarized and updates itself. Requires macOS 15+.
+1. Download the zip for your Mac from the [latest release](https://github.com/hieudvu/tattle/releases/latest):
+   `arm64` for Apple silicon, `x86_64` for Intel.
+2. Unzip and drag **Tattle** to Applications. Requires macOS 15+.
+3. To mute whole apps, press **Grant** in Settings ▸ Permissions.
 
-## Set up the browser extension
+Tattle is signed, notarized and updates itself.
 
-Without it Tattle still lists and controls apps. The extension adds tab titles and per-tab mute,
-pause and close. Open **Settings ▸ Browsers**; each installed browser has a row with its status
-(Not set up, Waiting for the extension, Connected).
+## Browser extension
 
-**Chrome, Edge, Brave, Arc, Vivaldi, Opera** (store-less, so it loads unpacked):
+Optional. It adds tab titles and per-tab controls. Open **Settings ▸ Browsers** and set up your browser:
 
-1. Make sure **Use browser extensions** is on, then click **Set Up** next to your browser.
-2. Click **Show Extension Folder**. Finder opens the folder with the extension.
-3. Click **Open Extensions Page** and turn on **Developer mode** (top right).
-4. Click **Load unpacked** and pick that folder.
-5. The row switches to **Connected**.
+| Browser | Steps |
+| --- | --- |
+| Chrome, Edge, Brave, Arc, Vivaldi, Opera | **Set Up**, then **Show Extension Folder** and **Open Extensions Page**. Turn on Developer mode, **Load unpacked**, pick the folder. |
+| Firefox | **Show Extension Folder**, **Open Extensions Page**, **Load Temporary Add-on**, pick `manifest.json`. Repeat after Firefox restarts. |
+| Safari | Safari ▸ Settings ▸ Extensions, tick **Tattle**, allow on all websites. |
 
-Chrome and Edge may show a "Disable developer mode extensions" notice at launch. Dismiss it; the
-extension keeps working. You can also take `tattle-chromium.zip` from the release, unzip it and
-load that folder instead.
+The row turns **Connected** when it works. Chrome and Edge may nag about developer mode extensions; dismiss it.
 
-**Firefox:** Show Extension Folder, **Open Extensions Page** (`about:debugging`), choose
-**Load Temporary Add-on**, then pick `manifest.json`. Firefox forgets temporary add-ons when it
-quits, so repeat this after a restart.
+## Development
 
-**Safari:** nothing to download. Open Safari ▸ Settings ▸ Extensions, tick **Tattle**, and allow it
-on all websites.
+See [docs/development.md](docs/development.md) for building, testing and releasing.
 
-To mute whole apps, also press **Grant** in Settings ▸ Permissions (System Audio Recording).
-
-## Develop
-
-```bash
-make d      # build + (re)launch "Tattle Dev.app" (bundle id dev.hieuvd.tattle.dev)
-make p      # build "Tattle.app" (bundle id dev.hieuvd.tattle) (no dev suffix, verified)
-make test   # swift test (all mocks; never touches the host)
-```
-
-Requires macOS 15+.
-
-## Releasing
-
-1. Move the `[Unreleased]` entries in `CHANGELOG.md` under a new `## [x.y.z] - YYYY-MM-DD` heading.
-2. `git tag vx.y.z && git push origin vx.y.z`.
-
-`.github/workflows/release.yml` then tests, builds arm64 (`macos-26`) and Intel (`macos-26-intel`),
-signs with Developer ID, notarizes, and publishes a GitHub Release with
-`Tattle-<ver>-arm64.zip`, `Tattle-<ver>-x86_64.zip`, `tattle-chromium.zip`, `tattle-firefox.zip` and
-the Sparkle feeds `appcast-arm64.xml` / `appcast-x86_64.xml`. The changelog section is the release notes
-in both GitHub and the in-app update window; the run fails early if the section is missing.
-A manual run (`workflow_dispatch`) builds and uploads artifacts only.
-
-Repo secrets: `MACOS_CERT_P12_BASE64`, `MACOS_CERT_PASSWORD`, `APPLE_ID`, `APPLE_APP_PASSWORD`,
-`APPLE_TEAM_ID`, `SPARKLE_PRIVATE_KEY` (EdDSA key, `generate_keys -x file`; its public half is
-`SUPublicEDKey` in `scripts/bundle.sh`).
-
-## Updates
-
-Pro builds update themselves with [Sparkle](https://sparkle-project.org) (Settings ▸ About ▸ Check for
-Updates, plus an automatic-check switch). Each build reads its own architecture's feed from
-`https://github.com/hieudvu/tattle/releases/latest/download/appcast-<arch>.xml`. Dev builds carry no feed
-and never update. Sparkle compares `CFBundleVersion` (set from the workflow run number, so it only goes up).
-
-## Icons
-
-- macOS 26/27: `Resources/Tattle.icon` (Icon Composer, Liquid Glass), compiled to
-  `Assets.car` by `actool` in `scripts/bundle.sh` and picked via `CFBundleIconName`.
-- macOS 15: `Resources/Legacy.icns`, generated by `scripts/make-icon.sh` from
-  `design/icons/app-icon.svg` and picked via `CFBundleIconFile`.
-- Both use the same whistle; the committed `.icns` means builds don't need a browser.
-
-## Layout
-
-- `TattleCore`: pure logic behind three protocols (audio source, process
-  inspector, terminator). No system calls.
-- `TattleSystem`: the real implementations (Core Audio HAL, sysctl, `kill`).
-- `TattleApp`: SwiftUI menu bar UI.
-
-Tests link `TattleCore` only, so they use fakes and can never touch the host.
-
-## Browser extensions (tab-level mute / pause / close)
-
-`Extensions/` holds one shared JS core plus thin Chromium (Chrome, Edge, Brave, Arc, …),
-Firefox and Safari wrappers; see `Extensions/README.md` and `docs/extension-protocol.md`.
-`node scripts/build-extensions.mjs` builds Chromium/Firefox; Safari is an `.appex` that
-`scripts/bundle.sh` adds to every bundle. The native-messaging host is installed per browser from
-Settings ▸ Browsers.
-
-Don't loop on `make d`: every launch re-registers the app with macOS.
+[MIT](LICENSE)
