@@ -11,9 +11,9 @@ import Foundation
 //   response {ok:true, messages:[<commands from Tattle>]}  or  {ok:false, error:"..."}
 
 enum AppFlavour: String {
-    case dev, pro
+    case dev, production
 
-    var supportDirectoryName: String { self == .pro ? "Tattle" : "Tattle Dev" }
+    var supportDirectoryName: String { self == .production ? "Tattle" : "Tattle Dev" }
 
     /// Same location TattleCore's BridgeSocketPath resolves, minus the env override (a sandboxed
     /// appex does not inherit the user's environment).

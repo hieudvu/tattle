@@ -77,6 +77,6 @@ test('validateCommand never throws on junk input', () => {
   }
 });
 
-test('NATIVE_HOSTS are the dev and pro host names from ExtensionIdentity', () => {
+test('NATIVE_HOSTS are the dev and production host names from ExtensionIdentity', () => {
   assert.deepEqual([...NATIVE_HOSTS], ['dev.hieuvd.tattle', 'dev.hieuvd.tattle.dev']);
 });

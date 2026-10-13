@@ -50,8 +50,8 @@ do {
 
 // socket path / flavour isolation
 check(AppFlavour.dev.socketPath(home: "/Users/u") == "/Users/u/Library/Application Support/Tattle Dev/bridge.sock", "dev socket path")
-check(AppFlavour.pro.socketPath(home: "/Users/u") == "/Users/u/Library/Application Support/Tattle/bridge.sock", "pro socket path")
-check(AppFlavour.dev.socketPath(home: "/h") != AppFlavour.pro.socketPath(home: "/h"), "dev and pro never share a socket")
+check(AppFlavour.production.socketPath(home: "/Users/u") == "/Users/u/Library/Application Support/Tattle/bridge.sock", "production socket path")
+check(AppFlavour.dev.socketPath(home: "/h") != AppFlavour.production.socketPath(home: "/h"), "dev and production never share a socket")
 
 // relay
 do {

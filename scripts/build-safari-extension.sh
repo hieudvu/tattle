@@ -1,7 +1,7 @@
 #!/bin/zsh
 # Build the Safari Web Extension app extension (.appex) and embed it in an already-built Tattle app.
 #
-#   scripts/build-safari-extension.sh <dev|pro> <path/to/Tattle[ Dev].app>
+#   scripts/build-safari-extension.sh <dev|production> <path/to/Tattle[ Dev].app>
 #
 # Produces <app>/Contents/PlugIns/TattleSafari[ Dev].appex and re-signs the app (the app's seal
 # covers PlugIns/, so embedding invalidates the signature bundle.sh made).
@@ -14,11 +14,11 @@ set -euo pipefail
 root=${0:A:h:h}
 cd "$root"
 
-flavor=${1:?usage: build-safari-extension.sh dev|pro <path/to/Tattle.app>}
-app=${2:?usage: build-safari-extension.sh dev|pro <path/to/Tattle.app>}
+flavor=${1:?usage: build-safari-extension.sh dev|production <path/to/Tattle.app>}
+app=${2:?usage: build-safari-extension.sh dev|production <path/to/Tattle.app>}
 case $flavor in
   dev) appex_name="TattleSafari Dev"; suffix=".dev" ;;
-  pro) appex_name="TattleSafari";     suffix="" ;;
+  production) appex_name="TattleSafari";     suffix="" ;;
   *)   echo "unknown flavor: $flavor" >&2; exit 2 ;;
 esac
 app=${app:A}
@@ -30,7 +30,7 @@ want_parent="dev.hieuvd.tattle$suffix"
 appex_id="$parent_id.safari"
 parent_version=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$app/Contents/Info.plist")
 parent_build=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$app/Contents/Info.plist")
-support_dir=$([[ $flavor == pro ]] && echo "Tattle" || echo "Tattle Dev")
+support_dir=$([[ $flavor == production ]] && echo "Tattle" || echo "Tattle Dev")
 sign=${SIGN_IDENTITY:--}
 archs=(${=ARCHS:-$(uname -m)})
 
@@ -66,7 +66,7 @@ done
 if (( ${#bins} > 1 )); then lipo -create "${bins[@]}" -output "$appex/Contents/MacOS/$appex_name"
 else cp "${bins[1]}" "$appex/Contents/MacOS/$appex_name"; fi
 
-# 3. Info.plist. TattleFlavour is what the handler reads to pick its socket: dev can never reach pro.
+# 3. Info.plist. TattleFlavour is what the handler reads to pick its socket: dev can never reach production.
 cat > "$appex/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">

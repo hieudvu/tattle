@@ -1,14 +1,14 @@
 #!/bin/zsh
-# Assemble Tattle.app (pro) or "Tattle Dev.app" (dev). The ONLY place the two
-# flavours differ is the name / bundle id / executable stamped below; the pro
+# Assemble Tattle.app (production) or "Tattle Dev.app" (dev). The ONLY place the two
+# flavours differ is the name / bundle id / executable stamped below; the production
 # bundle is verified at the end to carry no dev suffix.
 set -euo pipefail
 cd "${0:A:h}/.."
 
-flavor=${1:?usage: bundle.sh dev|pro}
+flavor=${1:?usage: bundle.sh dev|production}
 case $flavor in
   dev) name="Tattle Dev"; bundle_id="dev.hieuvd.tattle.dev"; config=debug ;;
-  pro) name="Tattle";     bundle_id="dev.hieuvd.tattle";     config=release ;;
+  production) name="Tattle";     bundle_id="dev.hieuvd.tattle";     config=release ;;
   *)   echo "unknown flavor: $flavor" >&2; exit 2 ;;
 esac
 
@@ -22,7 +22,7 @@ rm -rf "$app"
 mkdir -p "$app/Contents/MacOS"
 mkdir -p "$app/Contents/Resources"
 cp "$bin" "$app/Contents/MacOS/$name"
-# Native-messaging host the browsers launch; same bundle => same flavour (dev/pro).
+# Native-messaging host the browsers launch; same bundle => same flavour (dev/production).
 cp "$bindir/tattle-bridge" "$app/Contents/MacOS/tattle-bridge"
 
 # Browser extensions, shipped inside the app so Settings can hand the user the folder to
@@ -58,11 +58,11 @@ cp "$icon_out/Assets.car" "$app/Contents/Resources/"
 # actool's fallback icns tops out at 256px; macOS 15 gets our full-size flat icon instead.
 cp Resources/Legacy.icns "$app/Contents/Resources/Tattle.icns"
 
-# Updates are a pro-only feature: a dev bundle gets no feed, so it can never update itself.
+# Updates are a production-only feature: a dev bundle gets no feed, so it can never update itself.
 # One feed per architecture (each release publishes appcast-arm64.xml and appcast-x86_64.xml),
 # so an Intel Mac is never offered the arm64 build. SUPublicEDKey is public by design.
 update_keys=""
-if [[ $flavor == pro ]]; then
+if [[ $flavor == production ]]; then
   update_arch=${UPDATE_ARCH:-$(uname -m)}
   update_feed="https://github.com/hieudvu/tattle/releases/latest/download/appcast-$update_arch.xml"
   update_keys="  <key>SUFeedURL</key><string>$update_feed</string>
@@ -117,18 +117,18 @@ sign "$app"
 # it must run after the signing above and before the checks below.
 scripts/build-safari-extension.sh $flavor "$app"
 
-if [[ $flavor == pro ]]; then
-  [[ $name == "Tattle" && $bundle_id == "dev.hieuvd.tattle" ]] || { echo "pro bundle carries a dev suffix" >&2; exit 1; }
+if [[ $flavor == production ]]; then
+  [[ $name == "Tattle" && $bundle_id == "dev.hieuvd.tattle" ]] || { echo "production bundle carries a dev suffix" >&2; exit 1; }
   if grep -Eq '\.dev</string>|Dev</string>' "$app/Contents/Info.plist"; then
-    echo "pro Info.plist contains a dev marker" >&2; exit 1
+    echo "production Info.plist contains a dev marker" >&2; exit 1
   fi
   if grep -Erq '\.dev\.safari|TattleSafari Dev' "$app/Contents/PlugIns" 2>/dev/null; then
-    echo "pro bundle contains a dev Safari extension" >&2; exit 1
+    echo "production bundle contains a dev Safari extension" >&2; exit 1
   fi
 fi
 [[ -d $app/Contents/Frameworks/Sparkle.framework ]] || { echo "Sparkle.framework not embedded" >&2; exit 1; }
 if /usr/libexec/PlistBuddy -c 'Print :SUFeedURL' "$app/Contents/Info.plist" >/dev/null 2>&1; then has_feed=1; else has_feed=0; fi
-if [[ $flavor == pro && $has_feed == 0 ]] || [[ $flavor == dev && $has_feed == 1 ]]; then
+if [[ $flavor == production && $has_feed == 0 ]] || [[ $flavor == dev && $has_feed == 1 ]]; then
   echo "$flavor bundle has the wrong update feed setting" >&2; exit 1
 fi
 echo "built $app"

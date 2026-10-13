@@ -102,7 +102,7 @@ public final class TabBridgeService: TabSource, BrowserIntegrations, @unchecked 
     private var running = false
 
     /// - Parameters:
-    ///   - flavour: defaults to the running bundle's flavour (dev unless it is exactly the pro bundle).
+    ///   - flavour: defaults to the running bundle's flavour (dev unless it is exactly the production bundle).
     ///   - hostExecutable: the `tattle-bridge` the manifests point at; defaults to the one next to the app executable.
     ///   - applicationDirectories: where `installedBrowsers()` looks; defaults to /Applications and ~/Applications.
     public init(

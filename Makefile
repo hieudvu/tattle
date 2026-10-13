@@ -7,9 +7,9 @@ d:
 	scripts/bundle.sh dev
 	open "build/Tattle Dev.app"
 
-# Pro build: "Tattle.app", no dev suffix anywhere. Does not launch.
+# Production build: "Tattle.app", no dev suffix anywhere. Does not launch.
 p:
-	scripts/bundle.sh pro
+	scripts/bundle.sh production
 
 # Tests only ever link TattleCore (all mocks); they never touch the host.
 test:

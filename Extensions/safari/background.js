@@ -1,6 +1,6 @@
 // Tattle, Safari. Thin wrapper: all logic lives in the shared core, copied to ./core by scripts/build-safari-extension.sh.
 // Safari has no native-messaging port, so the session runs over the polling transport. One host
-// ("safari"): the appex that contains this script only ever talks to its own app flavour (dev or pro).
+// ("safari"): the appex that contains this script only ever talks to its own app flavour (dev or production).
 import { startBridge } from './core/src/bridge.js';
 import { createPollingTransport } from './core/src/webext/pollingTransport.js';
 

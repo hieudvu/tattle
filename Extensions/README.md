@@ -46,5 +46,5 @@ extension id is `bghfplclpgjikclebjcgpojhcpfoflag`, which the native-messaging h
 **Firefox:** open `about:debugging#/runtime/this-firefox`, click "Load Temporary Add-on", and pick
 `Extensions/dist/firefox/manifest.json`. The id is `tattle@hieuvd.dev`.
 
-Both browsers look for the native host `dev.hieuvd.tattle` (pro) and `dev.hieuvd.tattle.dev` (dev).
+Both browsers look for the native host `dev.hieuvd.tattle` (production) and `dev.hieuvd.tattle.dev` (dev).
 Missing hosts are retried with backoff and are harmless.

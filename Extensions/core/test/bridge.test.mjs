@@ -27,7 +27,7 @@ function setup(opts = {}) {
   return { timers, transports, reconnectors, tabsApi };
 }
 
-test('starts one reconnecting session per native host (dev and pro)', () => {
+test('starts one reconnecting session per native host (dev and production)', () => {
   const s = setup();
   assert.equal(s.reconnectors.length, 2);
   assert.deepEqual(s.transports.map((t) => t.host), ['dev.hieuvd.tattle', 'dev.hieuvd.tattle.dev']);

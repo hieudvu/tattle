@@ -95,7 +95,7 @@ jobs:
         env:
           BUILD_NUMBER: ${{ github.run_number }}
           CODESIGN_FLAGS: --options runtime --timestamp
-        run: scripts/bundle.sh pro
+        run: scripts/bundle.sh production
 
       - name: Notarize and staple
         env:

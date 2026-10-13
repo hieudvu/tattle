@@ -14,6 +14,6 @@ Rules:
 - Tests link `TattleCore` only (plus pure JS tests under `Extensions/core`). Nothing
   in a test may touch the host: no Core Audio, no signals, no real sockets/files
   outside a temp dir, no real browser.
-- Dev (`Tattle Dev`) and pro (`Tattle`) differ only by name/bundle id; the pro
+- Dev (`Tattle Dev`) and production (`Tattle`) differ only by name/bundle id; the production
   bundle is verified to carry no dev suffix (`make p`).
 - Warning-clean builds (`swift build`) and green `swift test` before a commit.

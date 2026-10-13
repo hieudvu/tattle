@@ -7,7 +7,7 @@ import SafariServices
 // The relay keeps ONE socket to the Tattle app for the life of the appex process, so the app sees
 // a stable "Safari connected" connection, exactly like tattle-bridge gives Chrome/Firefox.
 //
-// Dev/pro isolation: the flavour comes from this appex's own Info.plist (stamped by the build
+// Dev/production isolation: the flavour comes from this appex's own Info.plist (stamped by the build
 // script from the containing app), so TattleSafari Dev can only ever reach "Tattle Dev"'s socket.
 
 private enum Shared {

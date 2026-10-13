@@ -11,7 +11,7 @@ public enum NativeMessagingManifest {
         guard directoryComponents(for: browser) != nil else { throw IntegrationError.unsupportedBrowser(browser) }
         var object: [String: Any] = [
             "name": flavour.hostName,
-            "description": flavour == .pro ? "Tattle browser bridge" : "Tattle Dev browser bridge",
+            "description": flavour == .production ? "Tattle browser bridge" : "Tattle Dev browser bridge",
             "path": hostPath,
             "type": "stdio",
         ]

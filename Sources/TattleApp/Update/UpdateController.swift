@@ -13,8 +13,8 @@ final class UpdateFlagDelegate: NSObject, SPUUpdaterDelegate {
     }
 }
 
-/// Owns the one Sparkle updater. It only runs in a pro bundle that carries a feed:
-/// `scripts/bundle.sh` stamps `SUFeedURL` and `SUPublicEDKey` into pro builds and
+/// Owns the one Sparkle updater. It only runs in a production bundle that carries a feed:
+/// `scripts/bundle.sh` stamps `SUFeedURL` and `SUPublicEDKey` into production builds and
 /// nothing else, so a dev build (or a plain `swift run`) never checks for updates.
 @MainActor
 @Observable

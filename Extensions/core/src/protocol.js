@@ -6,7 +6,7 @@ export const COMMANDS = Object.freeze(['mute', 'unmute', 'pause', 'close', 'focu
 export const BROWSERS = Object.freeze([
   'chrome', 'edge', 'brave', 'arc', 'vivaldi', 'opera', 'chromium', 'firefox', 'safari',
 ]);
-// Native-messaging host names. Dev and pro never share one.
+// Native-messaging host names. Dev and production never share one.
 export const NATIVE_HOSTS = Object.freeze(['dev.hieuvd.tattle', 'dev.hieuvd.tattle.dev']);
 
 export function buildHello({ browser, extensionVersion }) {

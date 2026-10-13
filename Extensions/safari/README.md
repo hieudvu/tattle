@@ -20,7 +20,7 @@ Safari tab APIs <-> background.js (shared core session)
 ## Build
 
 ```sh
-scripts/build-safari-extension.sh <dev|pro> "build/Tattle Dev.app"   # after scripts/bundle.sh
+scripts/build-safari-extension.sh <dev|production> "build/Tattle Dev.app"   # after scripts/bundle.sh
 ```
 
 Embeds `Contents/PlugIns/TattleSafari[ Dev].appex` (ids `dev.hieuvd.tattle[.dev].safari`) and re-signs the
@@ -45,7 +45,7 @@ entitlements. That is reproducible from one script with no Xcode project.
   serves this socket. The sandboxed appex gets `network.client` plus temporary exceptions for only
   `~/Library/Application Support/Tattle[ Dev]/`. Temporary exceptions are fine for Developer ID, not for
   the Mac App Store (that would need an App Group and a socket/XPC moved into the group container).
-- **Dev/pro isolation.** The flavour is stamped into the appex Info.plist (`TattleFlavour`); a dev appex
+- **Dev/production isolation.** The flavour is stamped into the appex Info.plist (`TattleFlavour`); a dev appex
   can only open the "Tattle Dev" socket.
 
 ## Using it

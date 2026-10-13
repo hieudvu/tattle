@@ -49,9 +49,9 @@ The extension *core* is transport-agnostic: it is handed a `transport`
 (`send(message)`, `onMessage(cb)`, `onDisconnect(cb)`) and a `tabsApi` adapter, so
 the same code runs everywhere and is unit-tested with fakes.
 
-## Dev vs pro
+## Dev vs production
 
-The dev app (`Tattle Dev.app`, `dev.hieuvd.tattle.dev`) and the pro app
+The dev app (`Tattle Dev.app`, `dev.hieuvd.tattle.dev`) and the production app
 (`Tattle.app`, `dev.hieuvd.tattle`) must never talk to each other's extensions:
 separate native-messaging host names (`dev.hieuvd.tattle[.dev]`), separate socket
 paths, and the flavour is derived from the bundle the bridge lives in.
