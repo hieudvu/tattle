@@ -39,8 +39,32 @@ Download the zip for your Mac from the [latest release](https://github.com/hieud
 (`arm64` for Apple silicon, `x86_64` for Intel), unzip, and drag Tattle to Applications. It is signed,
 notarized and updates itself. Requires macOS 15+.
 
-Tab-level control needs the browser extension: open Settings ▸ Browsers and follow the steps for your
-browser. Chrome and Edge load it unpacked (`tattle-chromium.zip` in the release); Safari's is built in.
+## Set up the browser extension
+
+Without it Tattle still lists and controls apps. The extension adds tab titles and per-tab mute,
+pause and close. Open **Settings ▸ Browsers**; each installed browser has a row with its status
+(Not set up, Waiting for the extension, Connected).
+
+**Chrome, Edge, Brave, Arc, Vivaldi, Opera** (store-less, so it loads unpacked):
+
+1. Turn on the browser's switch in Settings ▸ Browsers.
+2. Click **Show Extension Folder**. Finder opens the folder with the extension.
+3. Click **Open Extensions Page** and turn on **Developer mode** (top right).
+4. Click **Load unpacked** and pick that folder.
+5. The row switches to **Connected**.
+
+Chrome and Edge may show a "Disable developer mode extensions" notice at launch. Dismiss it; the
+extension keeps working. You can also take `tattle-chromium.zip` from the release, unzip it and
+load that folder instead.
+
+**Firefox:** Show Extension Folder, **Open Extensions Page** (`about:debugging`), choose
+**Load Temporary Add-on**, then pick `manifest.json`. Firefox forgets temporary add-ons when it
+quits, so repeat this after a restart.
+
+**Safari:** nothing to download. Open Safari ▸ Settings ▸ Extensions, tick **Tattle**, and allow it
+on all websites.
+
+macOS asks once to let Tattle control audio: use **Settings ▸ Permissions** and press Grant.
 
 ## Develop
 
@@ -97,7 +121,7 @@ Tests link `TattleCore` only, so they use fakes and can never touch the host.
 `Extensions/` holds one shared JS core plus thin Chromium (Chrome, Edge, Brave, Arc, …),
 Firefox and Safari wrappers; see `Extensions/README.md` and `docs/extension-protocol.md`.
 `node scripts/build-extensions.mjs` builds Chromium/Firefox; Safari is an `.appex` that
-`scripts/bundle.sh` adds to every bundle. Install the native-messaging
-host per browser from Settings ▸ Browsers.
+`scripts/bundle.sh` adds to every bundle. The native-messaging host is installed per browser from
+Settings ▸ Browsers.
 
 Don't loop on `make d`: every launch re-registers the app with macOS.
