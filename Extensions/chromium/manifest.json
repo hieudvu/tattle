@@ -1,0 +1,20 @@
+{
+  "manifest_version": 3,
+  "name": "Tattle",
+  "short_name": "Tattle",
+  "description": "Shows which browser tab is playing sound, and lets Tattle mute, pause, close or focus it.",
+  "version": "0.1.0",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEApMdY7FChyHNKR9xIQUBaD5z1j98ym4vsqt6KJEFqp6FammKVYHp4I51S/QCVGA5ffo7FkfhelT8+pPoSyMjd4sK9FlpuAaMPzauwtO2mbPvOEIuE100vteIvJspPVhBJNcSCfGkE2YscSSmUQiejUiLw8FdF6LUUZRwoc/pM/7crriJPBIZmGIS2xLo4O2vFYL7jzsuscCjtv+R0JL0Bk2vMsq0gC4uNyP02CPCr7r3B745IPY/o1kl0m7nT+bbG4YJwJsX35kXz0Lm6iUhKHc/Qm9F4dAAjxQsCD4vQ1ILy/X5p1r7oYkxUfPAapSNME8iA9HpU6ZJUni8jT3V0BQIDAQAB",
+  "permissions": ["tabs", "nativeMessaging", "scripting", "alarms"],
+  "host_permissions": ["<all_urls>"],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  }
+}

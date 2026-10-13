@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tattle whistle — animated</title>
+<style>
+  :root { --bg:#f4f4f6; --card:#fff; --ink:#16161a; --muted:#6b6b76; --line:#e3e3e8; --cycle:1.2s; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#121214; --card:#1c1c20; --ink:#f2f2f5; --muted:#9a9aa5; --line:#2c2c33; } }
+  * { box-sizing:border-box; }
+  body { margin:0; padding:32px 16px 64px; background:var(--bg); color:var(--ink); font:15px/1.45 -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif; }
+  main { max-width:760px; margin:0 auto; }
+  h1 { font-size:26px; margin:0 0 4px; }
+  .lede { color:var(--muted); margin:0 0 22px; max-width:62ch; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:18px; padding:22px; margin-bottom:18px; }
+  .label { font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); margin:0 0 10px; }
+  .row { display:flex; gap:28px; align-items:flex-end; flex-wrap:wrap; }
+  .bar { display:flex; align-items:center; justify-content:space-between; height:32px; padding:0 14px; border-radius:8px; font-size:13px; font-weight:500; margin-bottom:8px; }
+  .bar.light { background:#e9e9ee; color:#111; }
+  .bar.dark { background:#26262b; color:#f2f2f5; }
+  .bar .states { display:flex; align-items:center; gap:18px; font-weight:400; font-size:11.5px; }
+  .bar .st { display:flex; align-items:center; gap:6px; }
+  svg { display:block; }
+  .zoom { display:flex; gap:28px; color:var(--ink); }
+  .zoom figure { margin:0; display:flex; flex-direction:column; align-items:center; gap:6px; font-size:11px; color:var(--muted); }
+  .zoom svg { background:repeating-conic-gradient(var(--line) 0 25%, transparent 0 50%) 0 0/12px 12px; border-radius:8px; }
+  .controls { display:flex; gap:10px; align-items:center; font-size:13px; color:var(--muted); }
+  .controls button { font:inherit; padding:5px 12px; border-radius:999px; border:1px solid var(--line); background:var(--card); color:var(--ink); cursor:pointer; }
+  .controls button[aria-pressed="true"] { background:var(--ink); color:var(--bg); }
+
+  /* Rays: appear one after another, hold, then vanish in the same order.
+     Same stepping as the app (10 steps per cycle, one step between rays). */
+  .ray { opacity:0; animation:ray var(--cycle) step-end infinite; }
+  .r2 { animation-delay:calc(var(--cycle) / 10); }
+  .r3 { animation-delay:calc(var(--cycle) / 10 * 2); }
+  @keyframes ray { 0% { opacity:0 } 10% { opacity:1 } 60% { opacity:0 } 100% { opacity:0 } }
+  @media (prefers-reduced-motion: reduce) { .ray { animation:none; opacity:1; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>Tattle — whistle, animated</h1>
+  <p class="lede">While something is making noise, the three rays light up one after another, hold, then fade out in the same order, and repeat. Idle is the quiet whistle, no rays.</p>
+
+  <div class="card">
+    <p class="label">Speed</p>
+    <div class="controls" id="speed">
+      <button data-cycle="1.8s">Calm</button>
+      <button data-cycle="1.2s" aria-pressed="true">Normal</button>
+      <button data-cycle="0.8s">Urgent</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <p class="label">App icon (the Dock icon is static)</p>
+    <div class="row" id="app"></div>
+  </div>
+
+  <div class="card">
+    <p class="label">Menu bar · 18 pt, animated</p>
+    <div id="bars"></div>
+  </div>
+
+  <div class="card">
+    <p class="label">Glyph, enlarged</p>
+    <div class="zoom" id="zoom"></div>
+  </div>
+</main>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffb12e"/><stop offset="1" stop-color="#ff4f3a"/></linearGradient>
+    <linearGradient id="shine" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".28"/><stop offset=".55" stop-color="#fff" stop-opacity="0"/></linearGradient>
+    <mask id="hole"><rect width="24" height="24" fill="#fff"/><circle cx="11" cy="15" r="2.2" fill="#000"/></mask>
+  </defs>
+</svg>
+
+<script>
+const RAYS = ['M8.2 7.2L7.6 5.6', 'M4.6 9.7L3.3 8.6', 'M2.8 13.6L1.1 13.3'];
+
+// Whistle artwork on a 24-unit grid. state: 'idle' | 'active' | 'still' (all rays, for the app icon)
+const art = (state) => `
+  <g mask="url(#hole)" fill="currentColor" ${state === 'idle' ? 'opacity=".5"' : ''}>
+    <circle cx="11" cy="15" r="6.2"/><rect x="11" y="8.8" width="11" height="4.8" rx="1.3"/>
+  </g>
+  ${state === 'idle' ? '' : `<g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+    ${RAYS.map((d, i) => `<path class="${state === 'active' ? `ray r${i + 1}` : ''}" d="${d}"/>`).join('')}
+  </g>`}`;
+
+const glyph = (state, px) => `<svg width="${px}" height="${px}" viewBox="0 0 24 24">${art(state)}</svg>`;
+
+const appIcon = (px) => `
+  <svg width="${px}" height="${px}" viewBox="0 0 100 100">
+    <rect width="100" height="100" rx="22.4" fill="url(#bg)"/>
+    <rect width="100" height="100" rx="22.4" fill="url(#shine)"/>
+    <g transform="translate(20 20) scale(2.5)" color="#fff">${art('still')}</g>
+  </svg>`;
+
+document.getElementById('app').innerHTML = [128, 64, 32, 16].map(appIcon).join('');
+document.getElementById('bars').innerHTML = ['light', 'dark'].map(t => `
+  <div class="bar ${t}">
+    <span>Sat 11 Oct&nbsp;&nbsp;14:02</span>
+    <span class="states">
+      <span class="st">${glyph('idle', 18)}idle</span>
+      <span class="st">${glyph('active', 18)}active</span>
+    </span>
+  </div>`).join('');
+document.getElementById('zoom').innerHTML =
+  `<figure>${glyph('idle', 120)}idle</figure><figure>${glyph('active', 120)}active</figure>`;
+
+document.getElementById('speed').addEventListener('click', (e) => {
+  const b = e.target.closest('button'); if (!b) return;
+  document.documentElement.style.setProperty('--cycle', b.dataset.cycle);
+  document.querySelectorAll('#speed button').forEach(x => x.setAttribute('aria-pressed', x === b));
+});
+</script>
+</body>
+</html>

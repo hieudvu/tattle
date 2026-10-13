@@ -1,0 +1,194 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version stamped into Info.plist (manual runs build artifacts only, no release)
+        default: 0.0.0
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  VERSION: ${{ github.event_name == 'workflow_dispatch' && inputs.version || github.ref_name }}
+
+jobs:
+  test:
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v4
+      - name: Swift tests
+        run: swift test
+      - name: Extension core tests
+        working-directory: Extensions/core
+        run: node --test
+      - name: Safari relay tests
+        run: Extensions/safari/test/run-tests.sh
+      - name: Release notes script tests
+        run: python3 scripts/test_release_notes.py
+      # Fail in a minute, before any signing or notarizing, if the tag has no changelog section.
+      - name: Changelog has a section for this tag
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: python3 scripts/release-notes.py --version "${VERSION#v}" > /dev/null
+
+  extensions:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Chromium and Firefox extensions
+        run: node scripts/build-extensions.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: extensions
+          path: Extensions/dist/*.zip
+          if-no-files-found: error
+
+  app:
+    needs: test
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - runner: macos-26
+            arch: arm64
+          - runner: macos-26-intel
+            arch: x86_64
+    runs-on: ${{ matrix.runner }}
+    env:
+      KEYCHAIN_PATH: ${{ github.workspace }}/signing.keychain-db
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Normalize version
+        run: echo "VERSION=${VERSION#v}" >> "$GITHUB_ENV"
+
+      - name: Import Developer ID certificate
+        env:
+          CERT_P12_BASE64: ${{ secrets.MACOS_CERT_P12_BASE64 }}
+          CERT_PASSWORD: ${{ secrets.MACOS_CERT_PASSWORD }}
+        run: |
+          set -euo pipefail
+          keychain_password=$(uuidgen)
+          echo "::add-mask::$keychain_password"
+          cert="$RUNNER_TEMP/cert.p12"
+          echo "$CERT_P12_BASE64" | base64 --decode > "$cert"
+          security create-keychain -p "$keychain_password" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$keychain_password" "$KEYCHAIN_PATH"
+          security import "$cert" -P "$CERT_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
+          rm -f "$cert"
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$keychain_password" "$KEYCHAIN_PATH" >/dev/null
+          security list-keychains -d user -s "$KEYCHAIN_PATH" login.keychain-db
+          identity=$(security find-identity -v -p codesigning "$KEYCHAIN_PATH" | awk '/Developer ID Application:/ {print $2; exit}')
+          [[ -n $identity ]] || { echo "no Developer ID Application identity in the .p12" >&2; exit 1; }
+          echo "SIGN_IDENTITY=$identity" >> "$GITHUB_ENV"
+
+      - name: Build and sign Tattle.app
+        env:
+          BUILD_NUMBER: ${{ github.run_number }}
+          CODESIGN_FLAGS: --options runtime --timestamp
+        run: scripts/bundle.sh pro
+
+      - name: Notarize and staple
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          set -euo pipefail
+          ditto -c -k --keepParent build/Tattle.app "$RUNNER_TEMP/notarize.zip"
+          xcrun notarytool submit "$RUNNER_TEMP/notarize.zip" \
+            --apple-id "$APPLE_ID" --password "$APPLE_APP_PASSWORD" --team-id "$APPLE_TEAM_ID" \
+            --wait --timeout 30m
+          xcrun stapler staple build/Tattle.app
+          xcrun stapler validate build/Tattle.app
+
+      - name: Verify and package
+        run: |
+          set -euo pipefail
+          codesign --verify --deep --strict --verbose=2 build/Tattle.app
+          spctl --assess --type execute --verbose=4 build/Tattle.app
+          mkdir -p dist
+          ditto -c -k --keepParent build/Tattle.app "dist/Tattle-${VERSION}-${{ matrix.arch }}.zip"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: app-${{ matrix.arch }}
+          path: dist/*.zip
+          if-no-files-found: error
+
+      - name: Remove signing keychain
+        if: always()
+        run: security delete-keychain "$KEYCHAIN_PATH" || true
+
+  # One Sparkle feed per architecture, each with a single item that points at that arch's
+  # zip on this release. The app stamps its own feed URL at build time (scripts/bundle.sh).
+  appcast:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: app
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: app-*
+          path: assets
+          merge-multiple: true
+      - name: Resolve Sparkle tools (version pinned by Package.resolved)
+        run: swift package resolve
+      - name: Generate signed appcasts
+        env:
+          SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+          [[ -n $SPARKLE_PRIVATE_KEY ]] || { echo "SPARKLE_PRIVATE_KEY is not set" >&2; exit 1; }
+          version=${VERSION#v}
+          generate_appcast=.build/artifacts/sparkle/Sparkle/bin/generate_appcast
+          mkdir -p feeds
+          for arch in arm64 x86_64; do
+            stage="$RUNNER_TEMP/stage-$arch"
+            mkdir -p "$stage"
+            cp "assets/Tattle-$version-$arch.zip" "$stage/"
+            # generate_appcast embeds the .html that sits next to an archive with the same base name.
+            python3 scripts/release-notes.py --version "$version" > "$stage/Tattle-$version-$arch.html"
+            printf '%s' "$SPARKLE_PRIVATE_KEY" | "$generate_appcast" --ed-key-file - \
+              --download-url-prefix "https://github.com/${{ github.repository }}/releases/download/$GITHUB_REF_NAME/" \
+              --embed-release-notes \
+              --link "https://github.com/${{ github.repository }}" \
+              -o "feeds/appcast-$arch.xml" "$stage"
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: appcasts
+          path: feeds/*.xml
+          if-no-files-found: error
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [appcast, extensions]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: assets
+          merge-multiple: true
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          python3 scripts/release-notes.py --version "${VERSION#v}" --format markdown > notes.md
+          ls -l assets
+          gh release create "$GITHUB_REF_NAME" assets/* --title "$GITHUB_REF_NAME" --notes-file notes.md
