@@ -9,6 +9,8 @@ cannot be cut without one.
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-10-13
+
 ### Fixed
 - Tattle no longer quits when you press Grant in Settings ▸ Permissions to allow System Audio Recording.
 
