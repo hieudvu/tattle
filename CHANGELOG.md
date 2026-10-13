@@ -11,11 +11,6 @@ cannot be cut without one.
 
 ## [0.1.1] - 2026-10-13
 
-### Fixed
-- Tattle no longer quits when you press Grant in Settings ▸ Permissions to allow System Audio Recording.
-
-## [0.1.0] - 2026-10-13
-
 First public release. Requires macOS 15 or later (Apple silicon and Intel).
 
 ### Added
