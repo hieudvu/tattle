@@ -6,7 +6,7 @@ struct GeneralTab: View {
     var body: some View {
         SettingsForm {
             Section {
-                Toggle(isOn: Binding(get: { model.launchAtLogin }, set: model.setLaunchAtLogin)) {
+                Toggle(isOn: Binding(get: { model.launchAtLogin }, set: { model.setLaunchAtLogin($0) })) {
                     Text("Open at login")
                     Text("Start Tattle when you log in.").settingsSubtitleStyle()
                 }
