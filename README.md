@@ -18,7 +18,7 @@
   <a href="LICENSE"><img src="https://img.shields.io/github/license/hieudvu/tattle" alt="MIT license"></a>
 </p>
 
-<p align="center"><img src="docs/images/panel.png" alt="Tattle's menu bar panel listing Microsoft Edge with two noisy tabs and Safari playing a muted song" width="560"></p>
+<p align="center"><img src="docs/images/panel.png" alt="Tattle's menu bar panel listing Microsoft Edge with two noisy tabs and Safari playing a muted song" width="600"></p>
 
 ## Features
 
