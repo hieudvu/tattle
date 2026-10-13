@@ -47,7 +47,7 @@ pause and close. Open **Settings ▸ Browsers**; each installed browser has a ro
 
 **Chrome, Edge, Brave, Arc, Vivaldi, Opera** (store-less, so it loads unpacked):
 
-1. Turn on the browser's switch in Settings ▸ Browsers.
+1. Make sure **Use browser extensions** is on, then click **Set Up** next to your browser.
 2. Click **Show Extension Folder**. Finder opens the folder with the extension.
 3. Click **Open Extensions Page** and turn on **Developer mode** (top right).
 4. Click **Load unpacked** and pick that folder.
@@ -64,7 +64,7 @@ quits, so repeat this after a restart.
 **Safari:** nothing to download. Open Safari ▸ Settings ▸ Extensions, tick **Tattle**, and allow it
 on all websites.
 
-macOS asks once to let Tattle control audio: use **Settings ▸ Permissions** and press Grant.
+To mute whole apps, also press **Grant** in Settings ▸ Permissions (System Audio Recording).
 
 ## Develop
 
