@@ -7,7 +7,9 @@ import TattleCore
 /// macOS that drops them degrades to `.notDetermined` instead of failing to launch.
 public enum AudioCaptureAccess {
     private typealias Preflight = @convention(c) (CFString, CFDictionary?) -> Int
-    private typealias Request = @convention(c) (CFString, CFDictionary?, @convention(block) (Bool) -> Void) -> Void
+    // The block must be `@escaping`: TCC keeps it and calls back after the prompt is answered. Without
+    // it Swift treats the block as non-escaping and traps (EXC_BREAKPOINT) when TCC retains it.
+    private typealias Request = @convention(c) (CFString, CFDictionary?, @escaping @convention(block) (Bool) -> Void) -> Void
 
     private static func symbol(_ name: String) -> UnsafeMutableRawPointer? {
         guard let tcc = dlopen("/System/Library/PrivateFrameworks/TCC.framework/Versions/A/TCC", RTLD_NOW) else { return nil }
