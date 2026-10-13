@@ -4,7 +4,7 @@ import SwiftUI
 /// Chromeless window setup, copied from Continuo (which mirrors exelban/stats): a
 /// plain titled window with a transparent titlebar + full-size content view and the
 /// native traffic lights. That is all a `NavigationSplitView` sidebar needs to
-/// render the System-Settings look — the frosted, elevated (on macOS 26 an inset
+/// render the System-Settings look: the frosted, elevated (on macOS 26 an inset
 /// floating card) sidebar with the traffic lights on it. No hand-positioned buttons.
 enum ChromelessWindowConfig {
     @MainActor

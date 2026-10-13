@@ -71,7 +71,7 @@ public final class CoreAudioProcessMuter: ProcessMuting, @unchecked Sendable {
             }
 
             // AudioDeviceStart can block indefinitely (seen when the process is not
-            // allowed to tap). Never block the caller — the UI thread — for long.
+            // allowed to tap). Never block the caller (the UI thread) for long.
             let started = DispatchSemaphore(value: 0)
             let outcome = StartOutcome()
             let tap = Tap(tapID: tapID, aggregateID: aggregateID, procID: procID)

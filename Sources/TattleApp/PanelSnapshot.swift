@@ -13,7 +13,7 @@ import TattleCore
         Noisemaker(ownerPID: 101, name: "Microsoft Edge", bundlePath: "/Applications/Microsoft Edge.app"),
         Noisemaker(ownerPID: 102, name: "Safari", bundlePath: "/Applications/Safari.app"),
         Noisemaker(ownerPID: 103, name: "Google Chrome", bundlePath: "/Applications/Google Chrome.app", isHeadless: true),
-    ]
+    ].filter { ProcessInfo.processInfo.environment["TATTLE_RENDER_PRO"] == nil || $0.ownerPID != 103 }
     for (suffix, items, muted) in [("busy", sample, Set<Int32>([102])), ("single", [sample[0]], Set<Int32>()), ("empty", [], Set<Int32>())] {
         let all = [
             TabInfo(browser: .edge, tabID: "1:1", title: "Lo-fi hip hop radio — beats to relax/study to", url: "https://www.youtube.com/watch?v=x", isAudible: true, isMuted: false),
@@ -21,7 +21,7 @@ import TattleCore
         ]
         let tabs = items.isEmpty ? [] : (suffix == "single" ? Array(all.prefix(1)) : all)
         let model = NoiseModel(previewing: items, muted: muted, tabs: tabs, playing: (items.isEmpty || suffix == "single") ? [:] : [101: NowPlayingInfo(title: "Lo-fi hip hop radio — beats to relax/study to", artist: "Lofi Girl"), 102: NowPlayingInfo(title: "Blinding Lights", artist: "The Weeknd", isPlaying: false)])
-        model.previewUpdateAvailable = suffix == "busy"
+        model.previewUpdateAvailable = suffix == "busy" && ProcessInfo.processInfo.environment["TATTLE_RENDER_PRO"] == nil
         for scheme in [ColorScheme.light, .dark] {
             let view = NoisePanel(model: model).environment(\.colorScheme, scheme)
             let host = NSHostingView(rootView: view)
@@ -78,6 +78,46 @@ import TattleCore
                 try? rep.representation(using: .png, properties: [:])?
                     .write(to: URL(fileURLWithPath: "\(out)-\(name)-\(scheme == .dark ? "dark" : "light").png"))
             }
+        }
+    }
+    exit(0)
+}
+
+/// Dev aid: `TATTLE_RENDER_STORY=/tmp/story TATTLE_RENDER_PRO=1 .build/debug/Tattle` writes one light PNG
+/// per scene of the README animation (real NoisePanel, sample data), then exits.
+@MainActor func renderStoryIfRequested() {
+    guard let out = ProcessInfo.processInfo.environment["TATTLE_RENDER_STORY"] else { return }
+    let edge = Noisemaker(ownerPID: 101, name: "Microsoft Edge", bundlePath: "/Applications/Microsoft Edge.app")
+    let safari = Noisemaker(ownerPID: 102, name: "Safari", bundlePath: "/Applications/Safari.app")
+    func tab(_ n: Int, _ title: String, _ url: String, muted: Bool = false) -> TabInfo {
+        TabInfo(browser: .edge, tabID: "1:\(n)", title: title, url: url, isAudible: !muted, isMuted: muted)
+    }
+    let lofi = "Lo-fi hip hop radio — beats to relax/study to"
+    let t1 = tab(1, lofi, "https://www.youtube.com/watch?v=x")
+    let t2 = tab(2, "Spotify — Web Player", "https://open.spotify.com/")
+    let song = NowPlayingInfo(title: "Blinding Lights", artist: "The Weeknd")
+    let scenes: [([Noisemaker], Set<Int32>, [TabInfo], [Int32: NowPlayingInfo])] = [
+        ([], [], [], [:]),
+        ([edge], [], [t1], [:]),
+        ([edge], [], [t1, t2], [:]),
+        ([edge], [], [t1, tab(2, "Spotify — Web Player", "https://open.spotify.com/", muted: true)], [:]),
+        ([edge, safari], [], [t1, tab(2, "Spotify — Web Player", "https://open.spotify.com/", muted: true)], [102: song]),
+        ([edge, safari], [102], [t1, tab(2, "Spotify — Web Player", "https://open.spotify.com/", muted: true)], [102: NowPlayingInfo(title: "Blinding Lights", artist: "The Weeknd", isPlaying: false)]),
+        ([edge], [], [t1], [:]),
+        ([], [], [], [:]),
+    ]
+    for (i, sc) in scenes.enumerated() {
+        let model = NoiseModel(previewing: sc.0, muted: sc.1, tabs: sc.2, playing: sc.3)
+        let host = NSHostingView(rootView: NoisePanel(model: model).environment(\.colorScheme, .light))
+        let size = host.fittingSize
+        let window = NSWindow(contentRect: NSRect(origin: .zero, size: size), styleMask: [.titled], backing: .buffered, defer: false)
+        window.appearance = NSAppearance(named: .aqua)
+        window.contentView = host
+        window.layoutIfNeeded()
+        host.frame = NSRect(origin: .zero, size: size)
+        if let rep = host.bitmapImageRepForCachingDisplay(in: host.bounds) {
+            host.cacheDisplay(in: host.bounds, to: rep)
+            try? rep.representation(using: .png, properties: [:])?.write(to: URL(fileURLWithPath: "\(out)-\(i).png"))
         }
     }
     exit(0)

@@ -2,6 +2,7 @@ import AppKit
 
 #if DEBUG
 renderSettingsIfRequested()
+renderStoryIfRequested()
 renderPanelIfRequested()  // dev aid: writes PNGs and exits when TATTLE_RENDER_PANEL is set
 #endif
 

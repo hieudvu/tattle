@@ -42,7 +42,7 @@ enum SettingsTabID: CaseIterable, Hashable {
 /// sidebar sections, a chromeless window with a tall transparent titlebar, a
 /// sticky pane title above the grouped form, and an opaque content ground.
 /// The window's size and minimum are owned by AppKit (`SettingsWindowPresenter`);
-/// SwiftUI just fills it — an ideal size here would re-apply on every re-layout.
+/// SwiftUI just fills it. An ideal size here would re-apply on every re-layout.
 struct SettingsRootView: View {
     @Bindable var model: SettingsModel
     var noise: NoiseModel? = nil

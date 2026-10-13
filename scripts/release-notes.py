@@ -128,7 +128,7 @@ def main():
         fail(f"no ## [{args.version}] section in {args.changelog}")
     rendered = render(section) if args.format == "html" else "\n".join(section).strip()
     if not rendered:
-        fail(f"## [{args.version}] in {args.changelog} is empty — the release would ship with blank notes")
+        fail(f"## [{args.version}] in {args.changelog} is empty, the release would ship with blank notes")
     print(rendered)
 
 

@@ -1,17 +1,52 @@
-# Tattle
+<p align="center"><img src="docs/images/icon.png" alt="Tattle" width="128"></p>
 
-Tells you which app — and which browser tab — is making noise on your Mac,
-and lets you mute, pause, or quit it.
+<h1 align="center">Tattle</h1>
 
-Status: early. Today it lists every app currently playing audio (Chrome helper
-processes collapse into Chrome, `--headless` is flagged) and can quit it.
-Mute, pause and per-tab are not built yet.
+<p align="center">
+  Tells you which app, and which browser tab, is making noise on your Mac,<br>
+  and lets you mute, pause, skip, close or quit it from the menu bar.
+</p>
+
+<p align="center">
+  <a href="https://github.com/hieudvu/tattle/releases/latest"><img src="https://img.shields.io/badge/Download%20for%20macOS-111111?style=for-the-badge&logo=apple&logoColor=white" alt="Download for macOS"></a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/hieudvu/tattle/releases/latest"><img src="https://img.shields.io/github/v/release/hieudvu/tattle?label=release" alt="Latest release"></a>
+  <a href="https://github.com/hieudvu/tattle/releases"><img src="https://img.shields.io/github/downloads/hieudvu/tattle/total?label=downloads" alt="Downloads"></a>
+  <img src="https://img.shields.io/badge/macOS-15%2B-blue" alt="macOS 15+">
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/hieudvu/tattle" alt="MIT license"></a>
+</p>
+
+<p align="center"><img src="docs/images/panel.png" alt="Tattle's menu bar panel listing Microsoft Edge with two noisy tabs and Safari playing a muted song" width="560"></p>
+
+## What it does
+
+- **Finds the noise.** Every app currently playing audio, live. Helper processes collapse into their
+  app, and `--headless` browsers are flagged.
+- **Down to the tab.** With the browser extension (Chrome, Edge, Brave, Arc, Vivaldi, Opera, Firefox
+  and Safari) each noisy tab is listed by title and site.
+- **Controls where it counts.** Mute or unmute an app or a single tab, pause, previous / next track,
+  close a tab, or quit the app.
+- **Now Playing.** Shows the song or video title next to the app.
+- **Light on resources.** It only scans while the panel or Settings is open.
+- **Private.** Everything stays on your Mac. Tab titles and URLs are read locally by the extension
+  and never leave it; Tattle never records or stores audio.
+
+## Install
+
+Download the zip for your Mac from the [latest release](https://github.com/hieudvu/tattle/releases/latest)
+(`arm64` for Apple silicon, `x86_64` for Intel), unzip, and drag Tattle to Applications. It is signed,
+notarized and updates itself. Requires macOS 15+.
+
+Tab-level control needs the browser extension: open Settings ▸ Browsers and follow the steps for your
+browser. Chrome and Edge load it unpacked (`tattle-chromium.zip` in the release); Safari's is built in.
 
 ## Develop
 
 ```bash
 make d      # build + (re)launch "Tattle Dev.app" (bundle id dev.hieuvd.tattle.dev)
-make p      # build "Tattle.app" (bundle id dev.hieuvd.tattle) — no dev suffix, verified
+make p      # build "Tattle.app" (bundle id dev.hieuvd.tattle) (no dev suffix, verified)
 make test   # swift test (all mocks; never touches the host)
 ```
 
@@ -50,10 +85,10 @@ and never update. Sparkle compares `CFBundleVersion` (set from the workflow run 
 
 ## Layout
 
-- `TattleCore` — pure logic behind three protocols (audio source, process
+- `TattleCore`: pure logic behind three protocols (audio source, process
   inspector, terminator). No system calls.
-- `TattleSystem` — the real implementations (Core Audio HAL, sysctl, `kill`).
-- `TattleApp` — SwiftUI menu bar UI.
+- `TattleSystem`: the real implementations (Core Audio HAL, sysctl, `kill`).
+- `TattleApp`: SwiftUI menu bar UI.
 
 Tests link `TattleCore` only, so they use fakes and can never touch the host.
 

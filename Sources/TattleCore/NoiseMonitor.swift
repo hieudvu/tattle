@@ -38,7 +38,7 @@ public struct NoiseMonitor: Sendable {
     private func owner(of pid: Int32) -> ProcessSnapshot? {
         guard var current = inspector.snapshot(of: pid) else { return nil }
         // WebKit's GPU/WebContent services sit outside any .app and under launchd, so neither the
-        // bundle nor the parent chain leads to Safari. Ask who is responsible for them instead —
+        // bundle nor the parent chain leads to Safari. Ask who is responsible for them instead:
         // but only for XPC services, so a bare `node` is still never blamed on its terminal.
         if current.bundlePath == nil, current.isXPCService,
            let responsible = current.responsiblePID, responsible != current.pid,

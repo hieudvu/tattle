@@ -1,5 +1,5 @@
 /// Policy for "auto-quit headless browsers": a headless app that has been making
-/// noise continuously for `afterSeconds` is due to be quit. Pure — the caller
+/// noise continuously for `afterSeconds` is due to be quit. Pure; the caller
 /// supplies the clock and does the quitting.
 public final class HeadlessReaper {
     /// Re-ask at most this often if a quit did not take (the app ignored SIGTERM).

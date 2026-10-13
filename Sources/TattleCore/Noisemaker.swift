@@ -5,7 +5,7 @@ public struct Noisemaker: Identifiable, Equatable, Sendable {
     public var id: Int32 { ownerPID }
     public let ownerPID: Int32
     public let name: String
-    /// The owning `.app`, when there is one — used to show the app's icon.
+    /// The owning `.app`, when there is one, used to show the app's icon.
     public let bundlePath: String?
     public let audioPIDs: [Int32]
     public let isHeadless: Bool
